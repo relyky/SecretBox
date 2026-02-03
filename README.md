@@ -5,7 +5,13 @@
 Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
  
 ### 加密 
-.\ProtectSecret.ps1 -Mode Encrypt -InputFile secret_box.json -OutputFile secret_box.bin
- 
+.\ProtectSecret.ps1 -Mode Encrypt -InputFile secret_box.json -OutputFile secret_box.b64
+
+### 加密(CS) 
+.\csharp\bin\Release\net8.0\win-x64\publish\SecretBox.exe encrypt secret_box.json secret_box.b64
+
 ### 解密
-.\ProtectSecret.ps1 -Mode Decrypt -InputFile secret_box.bin -OutputFile secret_restored.json
+.\ProtectSecret.ps1 -Mode Decrypt -InputFile secret_box.b64 -OutputFile secret_restored.json
+
+### 解密(CS) 
+.\csharp\bin\Release\net8.0\win-x64\publish\SecretBox.exe decrypt secret_box.b64 secret_restored_cs.json
