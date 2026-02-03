@@ -52,6 +52,8 @@ if (-not (Test-Path $InputFile)) {
     exit 1
 }
 
+Add-Type -AssemblyName System.Security
+
 if ($Mode -eq "Encrypt") {
     $content = Get-Content -Path $InputFile -Raw -Encoding UTF8
 
@@ -60,27 +62,34 @@ if ($Mode -eq "Encrypt") {
         exit 1
     }
 
-    $secureString = ConvertTo-SecureString -String $content -AsPlainText -Force
-    $encrypted = ConvertFrom-SecureString -SecureString $secureString
+    $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
+    $encryptedBytes = [System.Security.Cryptography.ProtectedData]::Protect(
+        $bytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser
+    )
+    $base64 = [Convert]::ToBase64String($encryptedBytes)
+    $wrapped = $base64 -replace "(.{80})", "`$1`n"
+    $wrapped = $wrapped.TrimEnd("`n")
 
-    $encrypted | Out-File -FilePath $OutputFile -Encoding UTF8 -NoNewline
+    $wrapped | Out-File -FilePath $OutputFile -Encoding UTF8 -NoNewline
 
     Write-Host "Encrypted: $OutputFile"
 }
 else {
-    $encrypted = Get-Content -Path $InputFile -Raw -Encoding UTF8
+    $base64 = Get-Content -Path $InputFile -Raw -Encoding UTF8
+    $base64 = $base64 -replace "`r`n|`n|`r", ""
 
     try {
-        $secureString = ConvertTo-SecureString -String $encrypted
+        $encryptedBytes = [Convert]::FromBase64String($base64)
+        $bytes = [System.Security.Cryptography.ProtectedData]::Unprotect(
+            $encryptedBytes, $null, [System.Security.Cryptography.DataProtectionScope]::CurrentUser
+        )
     }
     catch {
         Write-Error "Decryption failed. Invalid encrypted file or different user."
         exit 1
     }
 
-    $bstr = [System.Runtime.InteropServices.Marshal]::SecureStringToBSTR($secureString)
-    $content = [System.Runtime.InteropServices.Marshal]::PtrToStringAuto($bstr)
-    [System.Runtime.InteropServices.Marshal]::ZeroFreeBSTR($bstr)
+    $content = [System.Text.Encoding]::UTF8.GetString($bytes)
 
     if (-not (Test-JsonValid -Content $content)) {
         Write-Error "Decrypted content is not valid JSON"

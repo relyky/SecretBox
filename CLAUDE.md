@@ -4,16 +4,16 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 
 ## Project Overview
 
-SecretBox is a Windows-based secret file encryption utility using Windows DPAPI (Data Protection API). It encrypts/decrypts JSON configuration files with user-bound encryption.
+SecretBox is a Windows-based secret file encryption utility using Windows DPAPI (Data Protection API). It encrypts/decrypts JSON configuration files with user-bound encryption, outputting base64 format.
 
 ## Commands
 
 ```powershell
-# Encrypt JSON to binary (requires valid JSON input)
-.\ProtectSecret.ps1 -Mode Encrypt -InputFile secret.json -OutputFile secret.bin
+# Encrypt JSON to base64 (requires valid JSON input)
+.\ProtectSecret.ps1 -Mode Encrypt -InputFile secret.json -OutputFile secret.b64
 
-# Decrypt binary back to JSON
-.\ProtectSecret.ps1 -Mode Decrypt -InputFile secret.bin -OutputFile secret.json
+# Decrypt base64 back to JSON
+.\ProtectSecret.ps1 -Mode Decrypt -InputFile secret.b64 -OutputFile secret.json
 ```
 
 **Note:** If execution policy blocks scripts, use:
@@ -25,8 +25,8 @@ Set-ExecutionPolicy -ExecutionPolicy Bypass -Scope Process
 
 Single PowerShell script (`ProtectSecret.ps1`) with:
 - `Test-JsonValid` function for JSON validation
-- DPAPI encryption via `ConvertTo-SecureString` / `ConvertFrom-SecureString`
-- Secure memory cleanup using `Marshal.ZeroFreeBSTR`
+- DPAPI encryption via `System.Security.Cryptography.ProtectedData`
+- Base64 output with 80-character line wrapping
 
 ## Constraints
 
