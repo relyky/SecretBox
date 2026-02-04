@@ -100,7 +100,7 @@ if ($Mode -eq "Encrypt") {
 
     $bytes = [System.Text.Encoding]::UTF8.GetBytes($content)
     $encryptedBytes = [System.Security.Cryptography.ProtectedData]::Protect(
-        $bytes, $entropyBytes, [System.Security.Cryptography.DataProtectionScope]::CurrentUser
+        $bytes, $entropyBytes, [System.Security.Cryptography.DataProtectionScope]::LocalMachine
     )
     $base64 = [Convert]::ToBase64String($encryptedBytes)
     $wrapped = $base64 -replace "(.{80})", "`$1`n"
@@ -119,7 +119,7 @@ else {
     try {
         $encryptedBytes = [Convert]::FromBase64String($base64)
         $bytes = [System.Security.Cryptography.ProtectedData]::Unprotect(
-            $encryptedBytes, $entropyBytes, [System.Security.Cryptography.DataProtectionScope]::CurrentUser
+            $encryptedBytes, $entropyBytes, [System.Security.Cryptography.DataProtectionScope]::LocalMachine
         )
     }
     catch {

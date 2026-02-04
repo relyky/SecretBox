@@ -69,7 +69,7 @@ static void Encrypt(string inputFile, string outputFile, byte[]? entropy)
     }
 
     var bytes = Encoding.UTF8.GetBytes(content);
-    var encryptedBytes = ProtectedData.Protect(bytes, entropy, DataProtectionScope.CurrentUser);
+    var encryptedBytes = ProtectedData.Protect(bytes, entropy, DataProtectionScope.LocalMachine);
     var base64 = Convert.ToBase64String(encryptedBytes);
     var wrapped = WrapBase64(base64, 80);
 
@@ -87,7 +87,7 @@ static void Decrypt(string inputFile, string outputFile, byte[]? entropy)
     try
     {
         encryptedBytes = Convert.FromBase64String(base64);
-        bytes = ProtectedData.Unprotect(encryptedBytes, entropy, DataProtectionScope.CurrentUser);
+        bytes = ProtectedData.Unprotect(encryptedBytes, entropy, DataProtectionScope.LocalMachine);
     }
     catch
     {
